@@ -43,7 +43,7 @@ export default async function RootLayout({
                     href={"/"}
                     className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-amber-600 font-bold text-lg hover:opacity-80 transition-opacity"
                   >
-                    Workflow Escrow
+                    FreeCup
                   </Link>
                   <div className="flex items-center gap-2"></div>
                 </div>
