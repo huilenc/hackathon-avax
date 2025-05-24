@@ -1,13 +1,18 @@
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
+import { signInAction } from "@/app/actions";
+import { FormMessage, Message } from "@/components/form-message";
+import { GoogleLoginButton } from "@/components/google-login-button";
+import { SubmitButton } from "@/components/submit-button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { Message } from "postcss";
 
 export default function Login({ searchParams }: { searchParams: Message }) {
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <div className="w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-4">Sign In</h1>
+    <div className="flex flex-col gap-6">
+      <form className="flex-1 flex flex-col min-w-64">
+        <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-amber-600">
+          Sign in
+        </h1>
         <p className="text-sm text-muted-foreground mt-1">
           Don't have an account?{" "}
           <Link
@@ -17,23 +22,61 @@ export default function Login({ searchParams }: { searchParams: Message }) {
             Sign up
           </Link>
         </p>
-      </div>
-      <div className="w-full max-w-md">
-        <form className="space-y-4">
+
+        <div className="flex flex-col gap-4 mt-8">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input type="email" id="email" placeholder="Enter your email" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
             <Input
-              type="password"
-              id="password"
-              placeholder="Enter your password"
+              id="email"
+              name="email"
+              placeholder="you@example.com"
+              required
             />
           </div>
-        </form>
+
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <Label htmlFor="password">Password</Label>
+              <Link
+                className="text-xs text-blue-600 hover:text-blue-500 transition-colors"
+                href="/forgot-password"
+              >
+                Forgot Password?
+              </Link>
+            </div>
+            <Input
+              id="password"
+              type="password"
+              name="password"
+              placeholder="Your password"
+              required
+            />
+          </div>
+
+          <FormMessage message={searchParams} />
+
+          <SubmitButton
+            className="w-full"
+            pendingText="Signing In..."
+            formAction={signInAction}
+          >
+            Sign in
+          </SubmitButton>
+        </div>
+      </form>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-border" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">
+            Or continue with
+          </span>
+        </div>
       </div>
+
+      <GoogleLoginButton nextUrl="/dashboard" />
     </div>
   );
 }

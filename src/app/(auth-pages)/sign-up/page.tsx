@@ -1,14 +1,93 @@
-import { Message } from "postcss";
+import { signUpAction } from "@/app/actions";
+import { FormMessage, Message } from "@/components/form-message";
+import { SubmitButton } from "@/components/submit-button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import Link from "next/link";
 
 export default function Signup({ searchParams }: { searchParams: Message }) {
-  return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <div className="w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-4">Sign Up</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Create an account to get started
-        </p>
+  if ("message" in searchParams) {
+    return (
+      <div className="flex items-center justify-center p-4">
+        <FormMessage message={searchParams} />
       </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <form className="flex-1 flex flex-col min-w-64">
+        <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-amber-600">
+          Create an account
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Already have an account?{" "}
+          <Link
+            className="text-blue-600 hover:text-blue-500 transition-colors font-medium"
+            href="/sign-in"
+          >
+            Sign in
+          </Link>
+        </p>
+
+        <div className="flex flex-col gap-4 mt-8">
+          <div className="space-y-2">
+            <Label htmlFor="full-name">Full Name</Label>
+            <Input
+              id="full-name"
+              name="full-name"
+              placeholder="Please enter your full name"
+              minLength={3}
+              maxLength={255}
+              aria-label="Full Name"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              name="email"
+              placeholder="you@example.com"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              name="password"
+              placeholder="Create a password"
+              minLength={6}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="company-name">Company Name (optional)</Label>
+            <Input
+              id="company-name"
+              name="company-name"
+              placeholder="Enter your company name"
+              minLength={3}
+              maxLength={255}
+              aria-label="Company Name"
+            />
+          </div>
+
+          <FormMessage message={searchParams} />
+
+          <SubmitButton
+            className="w-full"
+            formAction={signUpAction}
+            pendingText="Creating account..."
+          >
+            Sign up
+          </SubmitButton>
+        </div>
+      </form>
     </div>
   );
 }
