@@ -34,11 +34,3 @@ DROP POLICY IF EXISTS "Allow users to view their agreement documents" ON storage
 DROP POLICY IF EXISTS "Allow users to upload agreement documents" ON storage.objects;
 DROP POLICY IF EXISTS "Allow users to view dispute evidence" ON storage.objects;
 DROP POLICY IF EXISTS "Allow users to upload dispute evidence" ON storage.objects;
-
--- Add comment to describe migration
-COMMENT ON TABLE profiles IS 'RLS disabled and policies dropped in migration.';
-COMMENT ON TABLE wallets IS 'RLS disabled and policies dropped in migration.';
-COMMENT ON TABLE transactions IS 'RLS disabled and policies dropped in migration.';
-COMMENT ON TABLE escrow_agreements IS 'RLS disabled and policies dropped in migration.';
-COMMENT ON TABLE dispute_resolutions IS 'RLS disabled and policies dropped in migration.';
-COMMENT ON TABLE storage.objects IS 'Storage policies dropped in migration.';

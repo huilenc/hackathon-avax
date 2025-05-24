@@ -53,7 +53,7 @@ async function waitForTransactionStatus(id: string) {
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = createSupabaseServerClient();
+    const supabase = await createSupabaseServerClient();
     const body: CreateEscrowRequest = await req.json();
 
     // Validate request
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
     const createResponse = await circleContractSdk.deployContract({
       name: `Escrow ${body.agreement.beneficiary_wallet?.wallet_address}`,
       description: `Escrow ${body.agreement.beneficiary_wallet?.wallet_address}`,
-      walletId: process.env.NEXT_PUBLIC_AGENT_WALLET_ID,
+      walletId: process.env.NEXT_PUBLIC_AGENT_WALLET_ID!,
       blockchain: process.env.CIRCLE_BLOCKCHAIN as Blockchain,
       fee: {
         type: "level",

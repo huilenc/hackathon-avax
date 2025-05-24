@@ -12,7 +12,7 @@ import { WalletInformationDialog } from "@/components/wallet-information-dialog"
 const Transactions = dynamic(() => import('@/components/transactions').then(mod => mod.Transactions), { ssr: false })
 
 export default async function ProtectedPage() {
-  const supabase = createSupabaseServerComponentClient();
+  const supabase = await createSupabaseServerComponentClient();
 
   const {
     data: { user },

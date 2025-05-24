@@ -1,7 +1,6 @@
 -- migration_name: adjust_storage_policies_for_agreement_documents_with_temp
 -- description: Update storage policies to handle temporary file uploads for agreements
 BEGIN;
-ALTER TABLE storage.objects DISABLE ROW LEVEL SECURITY;
 
 DO $$
 DECLARE 
@@ -27,46 +26,51 @@ EXCEPTION WHEN OTHERS THEN
   RAISE EXCEPTION 'Failed to clean up policies: %', SQLERRM;
 END $$;
 
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 COMMIT;
+
 -- Create new simplified policies
 -- Policy for uploads (both temp and final locations)
-CREATE POLICY "Enable upload for authenticated users" ON storage.objects FOR
-INSERT WITH CHECK (
-        bucket_id = 'agreement-documents'
-        AND auth.role() = 'authenticated'
-    );
--- Policy for reading files
-CREATE POLICY "Enable read for authenticated users" ON storage.objects FOR
-SELECT USING (
-        bucket_id = 'agreement-documents'
-        AND auth.role() = 'authenticated'
-    );
--- Policy for deleting temp files
-CREATE POLICY "Enable delete for authenticated users" ON storage.objects FOR DELETE USING (
+CREATE POLICY "Enable upload for authenticated users" ON storage.objects
+FOR INSERT WITH CHECK (
     bucket_id = 'agreement-documents'
     AND auth.role() = 'authenticated'
 );
+
+-- Policy for reading files
+CREATE POLICY "Enable read for authenticated users" ON storage.objects
+FOR SELECT USING (
+    bucket_id = 'agreement-documents'
+    AND auth.role() = 'authenticated'
+);
+
+-- Policy for deleting temp files
+CREATE POLICY "Enable delete for authenticated users" ON storage.objects
+FOR DELETE USING (
+    bucket_id = 'agreement-documents'
+    AND auth.role() = 'authenticated'
+);
+
 -- Policy for updates
-CREATE POLICY "Enable update for authenticated users" ON storage.objects FOR
-UPDATE USING (
-        bucket_id = 'agreement-documents'
-        AND auth.role() = 'authenticated'
-    ) WITH CHECK (
-        bucket_id = 'agreement-documents'
-        AND auth.role() = 'authenticated'
-    );
+CREATE POLICY "Enable update for authenticated users" ON storage.objects
+FOR UPDATE USING (
+    bucket_id = 'agreement-documents'
+    AND auth.role() = 'authenticated'
+) WITH CHECK (
+    bucket_id = 'agreement-documents'
+    AND auth.role() = 'authenticated'
+);
+
 DO $$
 DECLARE
   v_bucket_exists boolean;
 BEGIN
- -- Check if bucket exists
- SELECT EXISTS (
-   SELECT 1 FROM storage.buckets WHERE id = 'agreement-documents'
- ) INTO v_bucket_exists;
+  -- Check if bucket exists
+  SELECT EXISTS (
+    SELECT 1 FROM storage.buckets WHERE id = 'agreement-documents'
+  ) INTO v_bucket_exists;
 
- -- Log the operation
- RAISE NOTICE 'Bucket agreement-documents exists: %', v_bucket_exists;
+  -- Log the operation
+  RAISE NOTICE 'Bucket agreement-documents exists: %', v_bucket_exists;
 
   INSERT INTO storage.buckets (
     id,
@@ -85,8 +89,8 @@ BEGIN
   ON CONFLICT (id) DO UPDATE SET
     file_size_limit = EXCLUDED.file_size_limit,
     allowed_mime_types = EXCLUDED.allowed_mime_types
-    WHERE buckets.file_size_limit IS DISTINCT FROM EXCLUDED.file_size_limit
-    OR buckets.allowed_mime_types IS DISTINCT FROM EXCLUDED.allowed_mime_types;
+  WHERE buckets.file_size_limit IS DISTINCT FROM EXCLUDED.file_size_limit
+     OR buckets.allowed_mime_types IS DISTINCT FROM EXCLUDED.allowed_mime_types;
 
   RAISE NOTICE 'Bucket agreement-documents configuration updated';
 END $$;

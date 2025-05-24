@@ -1,9 +1,11 @@
+"use server";
+
 import { type NextRequest, type NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 
-export function createSupabaseServerClient(component: boolean = false) {
-  const cookieStore = cookies();
+export async function createSupabaseServerClient(component: boolean = false) {
+  const cookieStore = await cookies();
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
