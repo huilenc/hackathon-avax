@@ -1,162 +1,209 @@
+"use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { encodedRedirect } from "@/lib/utils";
+import { createClient } from "@/lib/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
+  ? process.env.NEXT_PUBLIC_VERCEL_URL
+  : "http://localhost:3000";
+
 export const signUpAction = async (formData: FormData) => {
-    const email = formData.get("email")?.toString();
-    const password = formData.get("password")?.toString();
-    const companyName = formData.get("company-name")?.toString().trim();
-    const fullName = formData.get("full-name")?.toString().trim();
-    const supabase = await createClient();
-    const headersList = await headers();
-    const origin = headersList.get("origin");
-    
-    if (fullName && (fullName.length < 3 || fullName.length > 255)) {
-      return { error: "Full name must be between 3 and 255 characters" };
-    }
-  
-    if (companyName && (companyName.length < 3 || companyName.length > 255)) {
-      return { error: "Company name must be between 3 and 255 characters" };
-    }
-  
-    if (!email || !password) {
-      return { error: "Email and password are required" };
-    }
-  
-    const { error, data: authData } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${origin}/auth/callback`,
-      },
-    });
-  
-    if (error) {
-      console.error(error.code + " " + error.message);
-      return encodedRedirect("error", "/sign-up", error.message);
-    }
-  
-    try {
-      const createdWalletSetResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/wallet-set`, {
-        method: "PUT",
-        body: JSON.stringify({
-          entityName: email,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-  
-      const createdWalletSet = await createdWalletSetResponse.json();
-  
-      const createdWalletResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/wallet`, {
-        method: "POST",
-        body: JSON.stringify({
-          walletSetId: createdWalletSet.id,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-  
-      const createdWallet = await createdWalletResponse.json();
-  
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .update({
-          email,
-          full_name: fullName,
-          company_name: companyName
-        })
-        .eq("auth_user_id", authData.user?.id)
-        .select()
-        .single();
-  
-      if (profileError) {
-        console.error("Error while attempting to create user:", profileError);
-        return { error: "Could not create user" };
-      }
-  
-      const { error: walletError } = await supabase
-        .schema("public")
-        .from("wallets")
-        .insert({
-          profile_id: profileData.id,
-          circle_wallet_id: createdWallet.id,
-          wallet_type: createdWallet.custodyType,
-          wallet_set_id: createdWalletSet.id,
-          wallet_address: createdWallet.address,
-          account_type: createdWallet.accountType,
-          blockchain: createdWallet.blockchain,
-          currency: "USDC",
-        })
-        .select();
-  
-      if (walletError) {
-        console.error(
-          "Error while attempting to create user's wallet:",
-          walletError,
-        );
-        return { error: "Could not create wallet" };
-      }
-    } catch (error: any) {
-      console.error(error.message);
-      return { error: error.message };
-    }
-  
-    return redirect("/dashboard");
-  };
+  const email = formData.get("email")?.toString();
+  const password = formData.get("password")?.toString();
+  const companyName = formData.get("company-name")?.toString().trim();
+  const fullName = formData.get("full-name")?.toString().trim();
+  const supabase = await createClient();
+  const origin = (await headers()).get("origin");
 
-export const signInAction = async (formData: FormData) => {
-const email = formData.get("email") as string;
-const password = formData.get("password") as string;
-const supabase = await createClient();
+  if (fullName && (fullName.length < 3 || fullName.length > 255)) {
+    return { error: "Full name must be between 3 and 255 characters" };
+  }
 
-const { data: user, error } = await supabase.auth.signInWithPassword({
+  if (companyName && (companyName.length < 3 || companyName.length > 255)) {
+    return { error: "Company name must be between 3 and 255 characters" };
+  }
+
+  if (!email || !password) {
+    return { error: "Email and password are required" };
+  }
+
+  const { error, data: authData } = await supabase.auth.signUp({
     email,
     password,
-});
+    options: {
+      emailRedirectTo: `${origin}/auth/callback`,
+    },
+  });
 
-if (error) {
-    return encodedRedirect("error", "/sign-in", error.message);
-}
+  if (error) {
+    console.error(error.code + " " + error.message);
+    return encodedRedirect("error", "/sign-up", error.message);
+  }
 
-return redirect("/dashboard");
+  try {
+    const createdWalletSetResponse = await fetch(`${baseUrl}/api/wallet-set`, {
+      method: "PUT",
+      body: JSON.stringify({
+        entityName: email,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const createdWalletSet = await createdWalletSetResponse.json();
+
+    const createdWalletResponse = await fetch(`${baseUrl}/api/wallet`, {
+      method: "POST",
+      body: JSON.stringify({
+        walletSetId: createdWalletSet.id,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const createdWallet = await createdWalletResponse.json();
+
+    const { data: profileData, error: profileError } = await supabase
+      .from("profiles")
+      .update({
+        email,
+        full_name: fullName,
+        company_name: companyName
+      })
+      .eq("auth_user_id", authData.user?.id)
+      .select()
+      .single();
+
+    if (profileError) {
+      console.error("Error while attempting to create user:", profileError);
+      return { error: "Could not create user" };
+    }
+
+    const { error: walletError } = await supabase
+      .schema("public")
+      .from("wallets")
+      .insert({
+        profile_id: profileData.id,
+        circle_wallet_id: createdWallet.id,
+        wallet_type: createdWallet.custodyType,
+        wallet_set_id: createdWalletSet.id,
+        wallet_address: createdWallet.address,
+        account_type: createdWallet.accountType,
+        blockchain: createdWallet.blockchain,
+        currency: "USDC",
+      })
+      .select();
+
+    if (walletError) {
+      console.error(
+        "Error while attempting to create user's wallet:",
+        walletError,
+      );
+      return { error: "Could not create wallet" };
+    }
+  } catch (error: any) {
+    console.error(error.message);
+    return { error: error.message };
+  }
+
+  return redirect("/dashboard");
 };
-  
+
+export const signInAction = async (formData: FormData) => {
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const supabase = await createClient();
+
+  const { data: user, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    return encodedRedirect("error", "/sign-in", error.message);
+  }
+
+  return redirect("/dashboard");
+};
+
 export const forgotPasswordAction = async (formData: FormData) => {
-const email = formData.get("email")?.toString();
-const supabase = await createClient();
-const headersList = await headers();
-const origin = headersList.get("origin");
-const callbackUrl = formData.get("callbackUrl")?.toString();
+  const email = formData.get("email")?.toString();
+  const supabase = await createClient();
+  const headersList = await headers();
+  const origin = headersList.get("origin");
+  const callbackUrl = formData.get("callbackUrl")?.toString();
 
-if (!email) {
+  if (!email) {
     return encodedRedirect("error", "/forgot-password", "Email is required");
-}
+  }
 
-const { error } = await supabase.auth.resetPasswordForEmail(email, {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${origin}/auth/callback?redirect_to=/dashboard/reset-password`,
-});
+  });
 
-if (error) {
+  if (error) {
     console.error(error.message);
     return encodedRedirect(
-    "error",
-    "/forgot-password",
-    "Could not reset password",
+      "error",
+      "/forgot-password",
+      "Could not reset password",
     );
-}
+  }
 
-if (callbackUrl) {
+  if (callbackUrl) {
     return redirect(callbackUrl);
-}
+  }
 
-return encodedRedirect(
+  return encodedRedirect(
     "success",
     "/forgot-password",
     "Check your email for a link to reset your password.",
-);
+  );
+};
+
+export const resetPasswordAction = async (formData: FormData) => {
+  const supabase = await createClient();
+
+  const password = formData.get("password") as string;
+  const confirmPassword = formData.get("confirmPassword") as string;
+
+  if (!password || !confirmPassword) {
+    encodedRedirect(
+      "error",
+      "/dashboard/reset-password",
+      "Password and confirm password are required",
+    );
+  }
+
+  if (password !== confirmPassword) {
+    encodedRedirect(
+      "error",
+      "/dashboard/reset-password",
+      "Passwords do not match",
+    );
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    password: password,
+  });
+
+  if (error) {
+    encodedRedirect(
+      "error",
+      "/dashboard/reset-password",
+      "Password update failed",
+    );
+  }
+
+  encodedRedirect("success", "/dashboard/reset-password", "Password updated");
+};
+
+export const signOutAction = async () => {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  return redirect("/sign-in");
 };
