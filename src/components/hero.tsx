@@ -24,10 +24,10 @@ const LandingPage = () => {
               <Zap className="w-8 h-8 text-amber-500" />
             </div>
             <p className="text-4xl md:text-5xl lg:text-6xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-amber-600 leading-tight">
-              Effortless Escrow for Secure Deals
+              FreeCup
             </p>
             <p className="mt-4 text-xl md:text-2xl text-center text-muted-foreground">
-              AI-Powered Escrow Service for Reliable Payments and Task Validation
+              Decentrilized Behance powered by AI Escrow Service for Instant Payments and Task Validation
             </p>
           </div>
 
