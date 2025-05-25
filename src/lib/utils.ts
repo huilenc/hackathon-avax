@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from "clsx"
+import { type ClassValue, clsx } from "clsx"
 import { redirect } from "next/navigation";
 import { twMerge } from "tailwind-merge"
 
@@ -12,4 +12,8 @@ export function encodedRedirect(
   message: string
 ) {
   return redirect(`${path}?${type}=${encodeURIComponent(message)}`);
+}
+
+export function formatCurrency(amount: number): string {
+  return amount.toFixed(2);
 }

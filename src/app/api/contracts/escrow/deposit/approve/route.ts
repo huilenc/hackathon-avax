@@ -11,7 +11,7 @@ interface DepositRequest {
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = createSupabaseServerClient();
+    const supabase = await createSupabaseServerClient();
     const agreementService = createAgreementService(supabase);
     const body: DepositRequest = await req.json();
 
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
     const circleApprovalResponse = await circleDeveloperSdk.createContractExecutionTransaction({
       abiFunctionSignature: "approve(address,uint256)",
       abiParameters: [contractAddress, contractAmount],
-      contractAddress: process.env.NEXT_PUBLIC_USDC_CONTRACT_ADDRESS,
+      contractAddress: process.env.NEXT_PUBLIC_USDC_CONTRACT_ADDRESS!,
       fee: {
         type: "level",
         config: {
