@@ -60,6 +60,7 @@ export default async function RootLayout({
                       className="transform rotate-12 mt-[2px] group-hover:animate-[wiggle_200ms_ease-in-out_infinite]"
                     />
                     <span className={vinaSans.className}>Cup</span>
+                    FreeCup
                   </Link>
                   <div className="flex items-center gap-2"></div>
                 </div>

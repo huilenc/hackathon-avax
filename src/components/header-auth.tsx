@@ -58,7 +58,16 @@ export default async function AuthButton() {
     <div className="flex items-center gap-4">
       Hey, {profile?.full_name || user.email || "Guest"}!
       <Button variant={"ghost"}>
-        <Link href="/dashboard">Dashboard</Link>
+        <Link href="/transactions">Transactions</Link>
+      </Button>
+      <Button variant={"ghost"}>
+        <Link href="/portfolio">Portfolio</Link>
+      </Button>
+      <Button variant={"ghost"}>
+        <Link href="/marketplace">Marketplace</Link>
+      </Button>
+      <Button variant={"ghost"}>
+        <Link href="/hire">Hire</Link>
       </Button>
       <form action={signOutAction}>
         <Button type="submit" variant={"outline"}>
