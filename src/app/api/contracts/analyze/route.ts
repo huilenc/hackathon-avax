@@ -1,16 +1,18 @@
 import { NextResponse } from "next/server";
-import mammoth from "mammoth";
-import pdf from "pdf-parse";
-import { openai } from "@/lib/utils/openAIClient";
+import OpenAI from "openai";
 
 // Configure accepted file types and their processors
 const FILE_PROCESSORS = {
   "application/pdf": async (buffer: Buffer) => {
+    // Dynamic import to prevent build-time issues
+    const pdf = (await import('pdf-parse')).default;
     const data = await pdf(buffer);
     return data.text;
   },
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
     async (buffer: Buffer) => {
+      // Dynamic import to prevent build-time issues
+      const mammoth = await import('mammoth');
       const result = await mammoth.extractRawText({ buffer });
       return result.value;
     },
@@ -36,7 +38,7 @@ const ANALYSIS_PROMPT = `
       }
     ],
     "tasks": [
-      "Create and deliver one high-quality, professionally photographed image featuring SparkleFizzCo.’s flagship beverage, SparkleFizz Original Citrus.",
+      "Create and deliver one high-quality, professionally photographed image featuring SparkleFizzCo.'s flagship beverage, SparkleFizz Original Citrus.",
       "Deliver one primary image and two social media adaptations optimized for Instagram.",
       "Submit the final image for Brand's approval."
     ]
@@ -47,12 +49,24 @@ const ANALYSIS_PROMPT = `
   Below you will find the content for the document to be analyzed:
 `;
 
+// Initialize OpenAI client
+const getOpenAIClient = () => {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not configured");
+  }
+  return new OpenAI({ apiKey });
+};
+
 export async function POST(req: Request) {
   if (!req.body) {
     return NextResponse.json({ error: "No body provided" }, { status: 400 });
   }
 
   try {
+    // Check OpenAI configuration first
+    const openai = getOpenAIClient();
+    
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 
@@ -74,7 +88,7 @@ export async function POST(req: Request) {
 
     // Analyze with OpenAI
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4",
       messages: [
         {
           role: "user",
@@ -89,6 +103,12 @@ export async function POST(req: Request) {
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error analyzing document:", error);
+    if (error instanceof Error && error.message === "OPENAI_API_KEY is not configured") {
+      return NextResponse.json(
+        { error: "OpenAI API is not properly configured" },
+        { status: 503 }
+      );
+    }
     return NextResponse.json(
       {
         error: "Failed to analyze document",
@@ -100,8 +120,17 @@ export async function POST(req: Request) {
 }
 
 export async function GET() {
-  return NextResponse.json({
-    message: "Send a POST request with a PDF or DOCX file to analyze",
-    supportedTypes: Object.keys(FILE_PROCESSORS),
-  });
+  try {
+    // Verify OpenAI configuration is available
+    getOpenAIClient();
+    return NextResponse.json({
+      message: "Send a POST request with a PDF or DOCX file to analyze",
+      supportedTypes: Object.keys(FILE_PROCESSORS),
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "OpenAI API is not properly configured" },
+      { status: 503 }
+    );
+  }
 }

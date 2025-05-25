@@ -13,7 +13,7 @@ interface ImageValidationResult {
 }
 
 export async function POST(request: Request) {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const agreementService = createAgreementService(supabase);
 
   const {
@@ -236,7 +236,7 @@ export async function POST(request: Request) {
 
     const circleReleaseResponse =
       await circleDeveloperSdk.createContractExecutionTransaction({
-        walletId: process.env.NEXT_PUBLIC_AGENT_WALLET_ID,
+        walletId: process.env.NEXT_PUBLIC_AGENT_WALLET_ID!,
         contractAddress,
         abiFunctionSignature: "release()",
         abiParameters: [],

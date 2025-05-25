@@ -9,7 +9,7 @@ interface DepositRequest {
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = createSupabaseServerClient();
+    const supabase = await createSupabaseServerClient();
     const body: DepositRequest = await req.json();
 
     if (!body.circleContractId) {

@@ -61,6 +61,16 @@ export interface Profile {
     };
     transaction?: Transaction;
   }
+
+  export interface Portfolio {
+    id: string;
+    created_at: string;
+    user_id: string;
+    description: string;
+    rate: number;
+    image_url: string;
+    name: string;
+  }
   
   export type Database = {
     public: {
@@ -84,6 +94,11 @@ export interface Profile {
           Row: EscrowAgreement;
           Insert: Omit<EscrowAgreement, 'created_at' | 'updated_at'>;
           Update: Partial<Omit<EscrowAgreement, 'created_at' | 'updated_at'>>;
+        };
+        portfolio: {
+          Row: Portfolio;
+          Insert: Omit<Portfolio, 'created_at' | 'updated_at'>;
+          Update: Partial<Omit<Portfolio, 'created_at'>>;
         };
       };
     };
