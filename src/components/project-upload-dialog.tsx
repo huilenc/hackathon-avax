@@ -21,8 +21,6 @@ export function ProjectUploadDialog({ profileId, onSuccess, trigger }: ProjectUp
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [tags, setTags] = useState('');
-  const [projectUrl, setProjectUrl] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -95,8 +93,6 @@ export function ProjectUploadDialog({ profileId, onSuccess, trigger }: ProjectUp
           profile_id: profileId,
           title,
           description,
-          tags,
-          project_url: projectUrl,
           image_url: imageUrl,
           created_at: new Date().toISOString()
         })
@@ -107,8 +103,6 @@ export function ProjectUploadDialog({ profileId, onSuccess, trigger }: ProjectUp
       // Reset form and close dialog
       setTitle('');
       setDescription('');
-      setTags('');
-      setProjectUrl('');
       setImageFile(null);
       setImagePreview(null);
       setOpen(false);
@@ -150,12 +144,6 @@ export function ProjectUploadDialog({ profileId, onSuccess, trigger }: ProjectUp
           <DialogHeader className="px-6 pt-6 pb-4 bg-gradient-primary text-white">
             <DialogTitle className="text-2xl font-bold flex items-center">
               <span className="mr-2">Add New Project</span>
-              <motion.div
-                animate={{ rotate: [0, 360] }}
-                transition={{ duration: 1, ease: "easeInOut" }}
-              >
-                <div className="h-6 w-6 rounded-full bg-gold flex items-center justify-center text-ruby-dark text-xs font-bold">+</div>
-              </motion.div>
             </DialogTitle>
             <DialogDescription className="text-white/80">
               Showcase your work to potential clients
@@ -192,108 +180,78 @@ export function ProjectUploadDialog({ profileId, onSuccess, trigger }: ProjectUp
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="tags" className="text-ruby-dark font-medium">Tags</Label>
-              <Input
-                id="tags"
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-                placeholder="e.g. Web3, Smart Contract, UI Design (comma separated)"
-                className="border-ruby-lighter focus:border-ruby focus:ring-ruby"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="projectUrl" className="text-ruby-dark font-medium">Project URL (optional)</Label>
-              <Input
-                id="projectUrl"
-                value={projectUrl}
-                onChange={(e) => setProjectUrl(e.target.value)}
-                placeholder="https://..."
-                className="border-ruby-lighter focus:border-ruby focus:ring-ruby"
-              />
-            </div>
-            
-            <div className="space-y-2">
               <Label className="text-ruby-dark font-medium">Project Image</Label>
-              
-              <AnimatePresence>
+              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-ruby-lighter rounded-md">
                 {imagePreview ? (
-                  <motion.div 
-                    className="relative rounded-md overflow-hidden h-48 bg-neutral-100"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                  >
-                    <Image
-                      src={imagePreview}
-                      alt="Project preview"
+                  <div className="relative w-full h-48">
+                    <Image 
+                      src={imagePreview} 
+                      alt="Project preview" 
                       fill
-                      className="object-cover"
+                      className="object-contain"
                     />
-                    <Button
+                    <button
                       type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2 h-8 w-8 rounded-full"
                       onClick={removeImage}
+                      className="absolute top-2 right-2 p-1 bg-white/80 rounded-full text-ruby-dark hover:bg-white"
                     >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </motion.div>
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
                 ) : (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <div 
-                      className="border-2 border-dashed border-ruby-lighter rounded-md p-8 text-center cursor-pointer hover:bg-ruby-lighter/10 transition-colors"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <ImageIcon className="h-10 w-10 mx-auto mb-2 text-ruby-light" />
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Click to upload or drag and drop
+                  <div className="space-y-1 text-center">
+                    <div className="flex flex-col items-center">
+                      <ImageIcon className="mx-auto h-12 w-12 text-ruby-lighter" />
+                      <div className="flex text-sm text-gray-600">
+                        <label
+                          htmlFor="file-upload"
+                          className="relative cursor-pointer rounded-md font-medium text-ruby hover:text-ruby-dark focus-within:outline-none"
+                        >
+                          <span>Upload an image</span>
+                          <input
+                            id="file-upload"
+                            name="file-upload"
+                            type="file"
+                            className="sr-only"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            ref={fileInputRef}
+                          />
+                        </label>
+                        <p className="pl-1">or drag and drop</p>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        PNG, JPG, GIF up to 5MB
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        PNG, JPG or WEBP (max 5MB)
-                      </p>
-                      <Input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleImageChange}
-                      />
                     </div>
-                  </motion.div>
+                  </div>
                 )}
-              </AnimatePresence>
+              </div>
             </div>
-            
-            <DialogFooter className="pt-4 flex gap-2 flex-row sm:justify-end">
+
+            <DialogFooter className="mt-6 gap-2 flex flex-col sm:flex-row sm:justify-end">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setOpen(false)}
-                className="border-ruby hover:bg-ruby-lighter/10"
+                className="border-ruby-light hover:bg-ruby-lighter/10"
               >
                 Cancel
               </Button>
               <Button 
-                type="submit"
+                type="submit" 
+                className="bg-gradient-primary hover:opacity-90"
                 disabled={isUploading}
-                className="bg-gradient-primary hover:opacity-90 border border-ruby-light"
               >
                 {isUploading ? (
                   <>
+                    <span className="mr-2">Uploading...</span>
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      className="mr-2"
                     >
                       <Upload className="h-4 w-4" />
                     </motion.div>
-                    Uploading...
                   </>
                 ) : (
                   <>Save Project</>

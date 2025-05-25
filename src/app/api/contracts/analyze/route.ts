@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
-import mammoth from "mammoth";
-import pdf from "pdf-parse";
-import { openai } from "@/lib/utils/openAIClient";
+import OpenAI from "openai";
 
 // Configure accepted file types and their processors
 const FILE_PROCESSORS = {
   "application/pdf": async (buffer: Buffer) => {
+    const pdf = (await import("pdf-parse")).default;
     const data = await pdf(buffer);
     return data.text;
   },
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
     async (buffer: Buffer) => {
+      const mammoth = (await import("mammoth"));
       const result = await mammoth.extractRawText({ buffer });
       return result.value;
     },
@@ -47,12 +47,23 @@ const ANALYSIS_PROMPT = `
   Below you will find the content for the document to be analyzed:
 `;
 
+const getOpenAIClient = () => {
+  const apiKey = process.env.OPENAI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not configured");
+  }
+
+  return new OpenAI({ apiKey });
+}
+
 export async function POST(req: Request) {
   if (!req.body) {
     return NextResponse.json({ error: "No body provided" }, { status: 400 });
   }
 
   try {
+    const openai = getOpenAIClient();
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 
@@ -74,7 +85,7 @@ export async function POST(req: Request) {
 
     // Analyze with OpenAI
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4",
       messages: [
         {
           role: "user",

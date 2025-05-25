@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle, Briefcase, Code, Award, DollarSign } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { PortfolioDialog } from "@/components/portfolio-dialog";
 import { ProjectUploadDialog } from "@/components/project-upload-dialog";
 import { AnimatedCard } from "@/components/dollar";
 
@@ -21,7 +22,7 @@ export default async function PortfolioPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, full_name, bio, hourly_rate, name")
+    .select("id, name, company_name, email, full_name")
     .eq("auth_user_id", user.id)
     .single();
 
@@ -31,6 +32,15 @@ export default async function PortfolioPage() {
     .select("*")
     .eq("profile_id", profile?.id)
     .order("created_at", { ascending: false });
+
+// task: retrieve portfolio data correctly
+const { data: portfolio } = await supabase
+    .from("portfolio")
+    .select("*")
+    .eq("user_id", user?.id)
+    .single();
+
+    console.log("here is my portfolio data", portfolio);
 
   return (
     <>
@@ -48,21 +58,19 @@ export default async function PortfolioPage() {
                   {profile?.full_name || profile?.name || "Freelancer"}
                 </h1>
                 <p className="text-white/80 mt-2 max-w-md">
-                  {profile?.bio || "Add your professional bio here"}
+                  {portfolio?.description || "Add your professional bio here"}
                 </p>
               </div>
             </div>
             <div className="mt-4 md:mt-0 flex gap-3">
               {profile?.id && (
-                <ProjectUploadDialog 
-                  profileId={profile.id} 
-                  onSuccess={() => {
-                    // This would trigger a refresh in a client component
-                  }}
+                <PortfolioDialog 
+                  profileId={profile.id}
+
                   trigger={
                     <Button variant="default" className="shadow-lg bg-gradient-primary hover:opacity-90 border border-gold">
                       <PlusCircle className="mr-2 h-4 w-4" />
-                      Add Project
+                      Edit Portfolio
                     </Button>
                   }
                 />
@@ -88,7 +96,7 @@ export default async function PortfolioPage() {
                   <p className="text-sm text-ruby dark:text-ruby-light font-medium">My Rate</p>
                   <div className="flex items-baseline">
                     <h3 className="text-2xl font-bold">
-                      {profile?.hourly_rate || "0"} USDC
+                      {portfolio?.rate || "0"} USDC
                     </h3>
                     <span className="ml-2 text-sm text-muted-foreground">/hour</span>
                   </div>
@@ -183,9 +191,7 @@ export default async function PortfolioPage() {
             {profile?.id && (
               <ProjectUploadDialog 
                 profileId={profile.id} 
-                onSuccess={() => {
-                  // This would trigger a refresh in a client component
-                }}
+          
                 trigger={
                   <Button className="bg-gradient-primary hover:opacity-90 border border-ruby-light">
                     <PlusCircle className="mr-2 h-4 w-4" />
@@ -217,7 +223,7 @@ export default async function PortfolioPage() {
                           {project.description}
                         </p>
                         <div className="flex flex-wrap gap-1">
-                          {project.tags?.split(',').map((tag, i) => (
+                          {project.tags?.split(',').map((tag: string, i: number) => (
                             <span key={i} className="text-xs px-2 py-1 bg-ruby-lighter text-ruby-dark rounded-full border border-gold/20">
                               {tag.trim()}
                             </span>
@@ -240,9 +246,6 @@ export default async function PortfolioPage() {
                 {profile?.id && (
                   <ProjectUploadDialog 
                     profileId={profile.id}
-                    onSuccess={() => {
-                      // This would trigger a refresh in a client component
-                    }}
                     trigger={
                       <Button className="bg-gradient-primary hover:opacity-90 border border-gold">
                         <PlusCircle className="mr-2 h-4 w-4" />

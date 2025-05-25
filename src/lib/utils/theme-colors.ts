@@ -7,7 +7,7 @@ export const brandColors = {
     lighter: '#EFC2B3',
   },
   gold: {
-    DEFAULT: '#D4AF37', // Classic gold color
+    DEFAULT: '#D4AF37', 
     light: '#F4D160',
     dark: '#A67C00',
   },
@@ -37,7 +37,7 @@ export const cssVariables = {
   '--color-gold-dark': brandColors.gold.dark,
 };
 
-// Gradient definitions
+
 export const gradients = {
   primaryToLight: 'linear-gradient(to right, var(--color-primary), var(--color-primary-light))',
   darkToPrimary: 'linear-gradient(to right, var(--color-primary-dark), var(--color-primary))',

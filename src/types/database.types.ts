@@ -29,6 +29,17 @@ export interface Profile {
     created_at: string;
   }
   
+  export interface Portfolio {
+    id: string;
+    user_id: string;
+    description: string;
+    created_at: string;
+    updated_at: string;
+    rate: number;
+    image_url: string;
+    name: string;
+  }
+  
   export interface EscrowAgreement {
     id: string;
     beneficiary_wallet_id: string;
@@ -84,6 +95,11 @@ export interface Profile {
           Row: EscrowAgreement;
           Insert: Omit<EscrowAgreement, 'created_at' | 'updated_at'>;
           Update: Partial<Omit<EscrowAgreement, 'created_at' | 'updated_at'>>;
+        };
+        portfolio: {
+          Row: Portfolio;
+          Insert: Omit<Portfolio, 'created_at' | 'updated_at'>;
+          Update: Partial<Omit<Portfolio, 'created_at' | 'updated_at'>>;
         };
       };
     };
